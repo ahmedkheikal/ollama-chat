@@ -1,0 +1,23 @@
+{
+  "name": "mcp101node",
+  "version": "1.0.0",
+  "description": "Chat application with web browsing capabilities",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/community": "^0.0.20",
+    "@langchain/core": "^0.1.17",
+    "chromedriver": "^114.0.0",
+    "selenium-webdriver": "^4.32.0"
+  },
+  "imports": {
+    "selenium-webdriver/*": {
+      "import": "selenium-webdriver/*.js"
+    }
+  }
+}
