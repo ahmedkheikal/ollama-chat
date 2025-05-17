@@ -40,6 +40,45 @@ class ChatService {
         }
     }
 
+    async sendMessageSSE(userInput, onMessage) {
+        try {
+            // Add user message to history
+            this.chatHistory.addMessage('human', userInput);
+            
+            // Check if the message is a web browsing request
+            if (userInput.toLowerCase().includes('browse') || userInput.toLowerCase().includes('search')) {
+                const browsingInstructions = this.parseBrowsingInstructions(userInput);
+                if (browsingInstructions) {
+                    const htmlResult = await this.seleniumService.browse(browsingInstructions);
+                    this.chatHistory.addMessage('system', `Web browsing result: ${htmlResult}`);
+                    onMessage({ type: 'system', content: htmlResult });
+                }
+            }
+
+            // Get AI response with streaming
+            const response = await this.ollamaClient.sendMessageSSE(
+                this.chatHistory.getMessages(),
+                userInput
+            );
+
+            let fullResponse = '';
+            // Handle streaming response
+            for await (const chunk of response) {
+                const content = chunk.content || '';
+                fullResponse += content;
+                onMessage({ type: 'ai', content });
+            }
+
+            // Add final AI response to history
+            this.chatHistory.addMessage('ai', fullResponse);
+
+            return fullResponse;
+        } catch (error) {
+            onMessage({ type: 'error', content: error.message });
+            throw new Error(`Failed to process message: ${error.message}`);
+        }
+    }
+
     parseBrowsingInstructions(message) {
         // Simple URL extraction - you might want to enhance this
         const urlMatch = message.match(/https?:\/\/[^\s]+/);

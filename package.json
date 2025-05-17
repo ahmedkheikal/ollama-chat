@@ -1,23 +1,23 @@
 {
-  "name": "mcp101node",
+  "name": "chat-sse-server",
   "version": "1.0.0",
-  "description": "Chat application with web browsing capabilities",
-  "main": "src/index.js",
   "type": "module",
+  "description": "SSE Chat Server with Express",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/server.js",
+    "start-index": "node src/index.js",
+    "dev": "nodemon src/server.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
     "@langchain/community": "^0.0.20",
     "@langchain/core": "^0.1.17",
     "chromedriver": "^114.0.0",
     "selenium-webdriver": "^4.32.0"
   },
-  "imports": {
-    "selenium-webdriver/*": {
-      "import": "selenium-webdriver/*.js"
-    }
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }

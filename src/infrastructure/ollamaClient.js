@@ -4,10 +4,11 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 
 class OllamaClient {
-    constructor(baseUrl = "http://localhost:11434", model = "openchat:latest") {
+    constructor(baseUrl = "http://localhost:11434", model = "openchat:latest", streaming = true) {
         this.model = new ChatOllama({
             baseUrl,
             model,
+            streaming: streaming,
         });
 
         this.chatPrompt = ChatPromptTemplate.fromMessages([
@@ -45,6 +46,18 @@ class OllamaClient {
                 input,
             });
             return response;
+        } catch (error) {
+            throw new Error(`Failed to send message to Ollama: ${error.message}`);
+        }
+    }
+
+    async sendMessageSSE(chatHistory, input) {
+        try {
+            const formattedHistory = this.formatMessages(chatHistory);
+            return  await this.chain.stream({
+                chat_history: formattedHistory,
+                input,
+            });
         } catch (error) {
             throw new Error(`Failed to send message to Ollama: ${error.message}`);
         }
