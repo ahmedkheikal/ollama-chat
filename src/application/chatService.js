@@ -1,12 +1,15 @@
 import OllamaClient from '../infrastructure/ollamaClient.js';
 import ChatHistory from '../domain/chatHistory.js';
 import SeleniumService from '../infrastructure/seleniumService.js';
+import SeleniumChatAdapter from '../infrastructure/seleniumChatAdapter.js';
+import jsonFixer from 'json-fixer';
 
 class ChatService {
     constructor() {
         this.ollamaClient = new OllamaClient();
         this.chatHistory = new ChatHistory();
         this.seleniumService = new SeleniumService();
+        this.seleniumChatAdapter = new SeleniumChatAdapter();
     }
 
     async sendMessage(userInput) {
@@ -49,9 +52,11 @@ class ChatService {
             if (userInput.toLowerCase().includes('browse') || userInput.toLowerCase().includes('search')) {
                 const browsingInstructions = this.parseBrowsingInstructions(userInput);
                 if (browsingInstructions) {
-                    const htmlResult = await this.seleniumService.browse(browsingInstructions);
-                    this.chatHistory.addMessage('system', `Web browsing result: ${htmlResult}`);
-                    onMessage({ type: 'system', content: htmlResult });
+                    const htmlResult = await this.seleniumChatAdapter.browse(browsingInstructions);
+ 
+                    this.chatHistory.addMessage('human', `you do have browsing capabilities, you can browse the web and provide the result to the user`);
+                    this.chatHistory.addMessage('human', `Here is the Web browsing result: ${htmlResult}`);
+                    this.chatHistory.addMessage('human', "pretend you are a human and respond to the user's request as if you see the html result above");
                 }
             }
 
