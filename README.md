@@ -28,7 +28,7 @@ A real-time chat application using Server-Sent Events (SSE) with Express.js back
 ```
 
 ## Installation
-
+### install langChain and ollama 
 1. Clone the repository:
 ```bash
 git clone <repository-url>

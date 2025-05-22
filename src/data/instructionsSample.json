@@ -1,0 +1,23 @@
+{
+    "url": "https://github.com/ahmedkheikal",
+    "actions": [
+        {
+            "type": "wait",
+            "duration": 2000
+        },
+        {
+            "type": "wait",
+            "duration": 1000
+        },
+        {
+            "type": "click",
+            "selector": "span[class='p-label']"
+        },
+        {
+            "type": "wait",
+            "duration": 1000
+        }
+    ],
+    "waitForSelector": "h1",
+    "extractSelector": "h1"
+}

@@ -9,10 +9,11 @@ class OllamaClient {
             baseUrl,
             model,
             streaming: streaming,
+            temperature: 1,
         });
 
         this.chatPrompt = ChatPromptTemplate.fromMessages([
-            ["system", "You are a helpful assistant respond with valid json."],
+            ["system", "You are a helpful assistant."],
             new MessagesPlaceholder("chat_history"),
             ["human", "{input}"],
         ]);

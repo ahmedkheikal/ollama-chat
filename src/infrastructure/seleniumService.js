@@ -1,3 +1,4 @@
+import { log } from 'console';
 import { Builder, By, until } from 'selenium-webdriver';
 import { Options } from 'selenium-webdriver/chrome.js';
     
@@ -34,15 +35,28 @@ class SeleniumService {
             for (const action of actions) {
                 switch (action.type) {
                     case 'click':
-                        await this.driver.wait(until.elementLocated(By.css(action.selector)));
-                        await this.driver.findElement(By.css(action.selector)).click();
+                        console.log("Clicking element:", action.selector);
+                        try {
+                            await this.driver.wait(until.elementLocated(By.xpath(action.selector)), 1000, "Element not found");
+                            console.log("Element located:", action.selector);
+                            await this.driver.findElement(By.xpath(action.selector)).click();
+                            console.log("Clicked element:", action.selector);
+                        } catch (error) {
+                            console.error("Error clicking element:", action.selector, error);
+                        }
                         break;
                     case 'type':
-                        await this.driver.wait(until.elementLocated(By.css(action.selector)));
-                        await this.driver.findElement(By.css(action.selector)).sendKeys(action.text);
+                        try {
+                            await this.driver.wait(until.elementLocated(By.xpath(action.selector)), 10000);
+                            await this.driver.findElement(By.css(action.selector)).sendKeys(action.text);
+                            console.log("Typed text:", action.text);
+                        } catch (error) {
+                            console.error("Error typing text:", action.selector, error);
+                        }
                         break;
                     case 'wait':
                         await this.driver.sleep(action.duration);
+                        console.log("Waited for:", action.duration);
                         break;
                 }
             }
@@ -56,9 +70,11 @@ class SeleniumService {
             let result = '';
             if (extractSelector) {
                 const element = await this.driver.findElement(By.css(extractSelector));
+                console.log("Element:", element);
                 result = await element.getAttribute('innerHTML');
             } else {
                 result = await this.driver.getPageSource();
+                console.log("Result:", result);
             }
 
             return result;
