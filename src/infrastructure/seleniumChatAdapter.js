@@ -18,67 +18,86 @@ class SeleniumChatAdapter {
     }
 
     getInstructionsSample() {
-        return this.instructionsSample;
+        return SeleniumChatAdapter.instructionsSample;
     }
 
     static getPrompt() {
         return `
-        You are an intelligent Selenium-based test suite powered by an LLM with DOM investigation capabilities.
+You are an autonomous Selenium automation planner. Given a high level research task, design a structured scraping flow that can be executed safely by a Selenium handler.
 
-Task:
+Produce **valid JSON only** that matches the template below. The response must:
+- Describe the primary page to open under "target".
+- Break the browsing plan into one or more flows. Each flow should include:
+  - A concise name and description of the objective.
+  - An ordered list of Selenium steps (navigate, wait, click, type, etc.).
+    * Every interaction MUST specify a locator via the "selector" field (string or object with selector + strategy) unless the step type is "navigate" or a pure timer wait.
+    * Wait steps may either provide a duration (milliseconds) or a selector to wait for.
+  - One or more extraction definitions describing what information to capture once the steps complete. Each extraction must supply a selector, desired extractType (text | html | attribute), optional attribute name, and whether all matching nodes should be returned.
+- Avoid prose outside the JSON document.
+- Default to CSS selectors unless a more stable XPath is required.
+- Use timeouts in milliseconds when waiting for DOM readiness.
 
-Navigate to the provided URL.
-
-Automatically investigate the DOM structure of each page you access.
-
-Identify all clickable elements, including:
-
-Anchor tags (<a>)
-
-Buttons (<button>, clickable <div>, etc.)
-
-Elements with onclick or role="button" attributes
-
-For each clickable element, generate a unique and reliable Selenium path (using XPath, CSS selectors, or other robust locators).
-
-Simulate interaction with each element to follow navigation or trigger behavior.
-
-Repeat the process recursively for all accessible pages.
-
-Generate a complete Selenium test suite that:
-
-Covers all navigable paths.
-
-Includes assertions for expected page transitions, content, or behaviors.
-
-Handles common scenarios (e.g., form submission, modals, dynamic content).
-
-Logs each visited path and interaction for traceability.
-
-Goal:
-
+Only return the JSON object.
         `;
     }
 
-
     static getInstructionsTemplate() {
         return `
+{
+  "target": {
+    "url": "https://example.com",
+    "description": "Brief summary of why this page is opened"
+  },
+  "flows": [
+    {
+      "name": "collect_primary_content",
+      "description": "Open the landing page and capture headline details",
+      "steps": [
         {
-            "url": "string",
-            "actions": [
-                {
-                    "type": "click",
-                    "selector": "string"
-                }, 
-                {
-                    "type": "type",
-                    "selector": "string",
-                    "text": "string"
-                }
-            ],
-            "waitForSelector": "string",
-            "extractSelector": "string"
+          "type": "navigate",
+          "url": "https://example.com"
+        },
+        {
+          "type": "wait",
+          "selector": {
+            "selector": "main",
+            "strategy": "css",
+            "timeout": 7000
+          }
+        },
+        {
+          "type": "click",
+          "selector": {
+            "selector": "button.cta",
+            "strategy": "css"
+          }
         }
+      ],
+      "extractions": [
+        {
+          "name": "hero_title",
+          "description": "Collect the hero section heading",
+          "selector": {
+            "selector": "header h1",
+            "strategy": "css",
+            "timeout": 5000
+          },
+          "extractType": "text"
+        },
+        {
+          "name": "cta_link",
+          "description": "Capture the destination of the CTA button",
+          "selector": {
+            "selector": "button.cta",
+            "strategy": "css"
+          },
+          "extractType": "attribute",
+          "attribute": "href"
+        }
+      ]
+    }
+  ]
+}
         `;
     }
 }

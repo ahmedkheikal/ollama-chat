@@ -1,23 +1,42 @@
 {
-    "url": "https://github.com/ahmedkheikal",
-    "actions": [
+    "target": {
+        "url": "https://github.com/ahmedkheikal",
+        "description": "Open Ahmed Kheikal's GitHub profile to capture visible headings."
+    },
+    "flows": [
         {
-            "type": "wait",
-            "duration": 2000
-        },
-        {
-            "type": "wait",
-            "duration": 1000
-        },
-        {
-            "type": "click",
-            "selector": "span[class='p-label']"
-        },
-        {
-            "type": "wait",
-            "duration": 1000
+            "name": "collect_profile_heading",
+            "description": "Navigate to the profile and capture the main header text.",
+            "steps": [
+                {
+                    "type": "navigate",
+                    "url": "https://github.com/ahmedkheikal"
+                },
+                {
+                    "type": "wait",
+                    "selector": {
+                        "selector": "body",
+                        "strategy": "css",
+                        "timeout": 5000
+                    }
+                },
+                {
+                    "type": "wait",
+                    "duration": 1000
+                }
+            ],
+            "extractions": [
+                {
+                    "name": "profile_header",
+                    "description": "Extract the text content of the primary profile heading.",
+                    "selector": {
+                        "selector": "h1",
+                        "strategy": "css",
+                        "timeout": 5000
+                    },
+                    "extractType": "text"
+                }
+            ]
         }
-    ],
-    "waitForSelector": "h1",
-    "extractSelector": "h1"
+    ]
 }

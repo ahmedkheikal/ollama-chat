@@ -22,9 +22,10 @@ class ChatService {
                 // Extract URL and instructions from the message
                 const browsingInstructions = this.parseBrowsingInstructions(userInput);
                 if (browsingInstructions) {
-                    const htmlResult = await this.seleniumService.browse(browsingInstructions);
-                    this.chatHistory.addMessage('system', `Web browsing result: ${htmlResult}`);
-                    console.log("System:", htmlResult);
+                    const browsingResult = await this.seleniumService.browse(browsingInstructions);
+                    const formattedResult = JSON.stringify(browsingResult, null, 2);
+                    this.chatHistory.addMessage('system', `Web browsing result: ${formattedResult}`);
+                    console.log('System:', formattedResult);
                 }
             }
 
@@ -52,10 +53,11 @@ class ChatService {
             if (userInput.toLowerCase().includes('browse') || userInput.toLowerCase().includes('search')) {
                 const browsingInstructions = this.parseBrowsingInstructions(userInput);
                 if (browsingInstructions) {
-                    const htmlResult = await this.seleniumChatAdapter.browse(browsingInstructions);
- 
+                    const browsingResult = await this.seleniumChatAdapter.browse(browsingInstructions);
+                    const formattedResult = JSON.stringify(browsingResult, null, 2);
+
                     this.chatHistory.addMessage('human', `you do have browsing capabilities, you can browse the web and provide the result to the user`);
-                    this.chatHistory.addMessage('human', `Here is the Web browsing result: ${htmlResult}`);
+                    this.chatHistory.addMessage('human', `Here is the Web browsing result: ${formattedResult}`);
                     this.chatHistory.addMessage('human', "pretend you are a human and respond to the user's request as if you see the html result above");
                 }
             }
@@ -89,10 +91,38 @@ class ChatService {
         const urlMatch = message.match(/https?:\/\/[^\s]+/);
         if (urlMatch) {
             return {
-                url: urlMatch[0],
-                actions: [],
-                waitForSelector: 'body', // Wait for body to load
-                extractSelector: 'body' // Extract body content
+                target: {
+                    url: urlMatch[0],
+                    description: 'URL automatically detected from user input.',
+                },
+                flows: [
+                    {
+                        name: 'default_flow',
+                        description: 'Load the page and capture the body HTML content.',
+                        steps: [
+                            {
+                                type: 'navigate',
+                                url: urlMatch[0],
+                            },
+                            {
+                                type: 'wait',
+                                selector: 'body',
+                                timeout: 5000,
+                            },
+                        ],
+                        extractions: [
+                            {
+                                name: 'page_body',
+                                selector: {
+                                    selector: 'body',
+                                    strategy: 'css',
+                                    extractType: 'html',
+                                },
+                                extractType: 'html',
+                            },
+                        ],
+                    },
+                ],
             };
         }
         return null;
