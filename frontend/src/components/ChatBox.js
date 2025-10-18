@@ -100,7 +100,7 @@ const ChatBox = ({ chatId }) => {
     setMessages(prev => [...prev, { id: userMessageId, type: 'user', content: userMessage }]);
 
     try {
-      const response = await fetch(`http://localhost:3000/chat/${chatId}/sse`, {
+      const response = await fetch(`http://localhost:3001/chat/${chatId}/sse`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

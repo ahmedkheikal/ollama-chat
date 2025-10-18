@@ -1,0 +1,25 @@
+{
+  "name": "chat-sse-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SSE Chat Server with Express",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "start-index": "node src/index.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.0.20",
+    "@langchain/core": "^0.1.17",
+    "chromedriver": "^136.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "json-fixer": "^1.6.15",
+    "zod": "^3.23.8",
+    "selenium-webdriver": "^4.32.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
