@@ -1,15 +1,12 @@
 import OllamaClient from '../infrastructure/ollamaClient.js';
 import ChatHistory from '../domain/chatHistory.js';
-import SeleniumService from '../infrastructure/seleniumService.js';
-import SeleniumChatAdapter from '../infrastructure/seleniumChatAdapter.js';
-import jsonFixer from 'json-fixer';
+import ToolManager from './toolManager.js';
 
 class ChatService {
-    constructor() {
-        this.ollamaClient = new OllamaClient();
-        this.chatHistory = new ChatHistory();
-        this.seleniumService = new SeleniumService();
-        this.seleniumChatAdapter = new SeleniumChatAdapter();
+    constructor(ollamaClient = null, chatHistory = null, toolManager = null) {
+        this.ollamaClient = ollamaClient || new OllamaClient();
+        this.chatHistory = chatHistory || new ChatHistory();
+        this.toolManager = toolManager || new ToolManager();
     }
 
     async sendMessage(userInput) {
@@ -17,18 +14,9 @@ class ChatService {
             // Add user message to history
             this.chatHistory.addMessage('human', userInput);
 
-            // Check if the message is a web browsing request
-            if (userInput.toLowerCase().includes('browse') || userInput.toLowerCase().includes('search')) {
-                // Extract URL and instructions from the message
-                const browsingInstructions = this.parseBrowsingInstructions(userInput);
-                if (browsingInstructions) {
-                    const browsingResult = await this.seleniumService.browse(browsingInstructions);
-                    const formattedResult = JSON.stringify(browsingResult, null, 2);
-                    this.chatHistory.addMessage('system', `Web browsing result: ${formattedResult}`);
-                    console.log('System:', formattedResult);
-                }
-            }
-
+            // Check for tool usage and execute tools
+            const toolResults = await this.executeTools(userInput);
+            
             // Get AI response
             const response = await this.ollamaClient.sendMessage(
                 this.chatHistory.getMessages(),
@@ -49,18 +37,12 @@ class ChatService {
             // Add user message to history
             this.chatHistory.addMessage('human', userInput);
             
-            // Check if the message is a web browsing request
-            if (userInput.toLowerCase().includes('browse') || userInput.toLowerCase().includes('search')) {
-                const browsingInstructions = this.parseBrowsingInstructions(userInput);
-                if (browsingInstructions) {
-                    const browsingResult = await this.seleniumChatAdapter.browse(browsingInstructions);
-                    const formattedResult = JSON.stringify(browsingResult, null, 2);
+            // Check for tool usage and execute tools
+            const toolResults = await this.executeTools(userInput, onMessage);
 
-                    this.chatHistory.addMessage('human', `you do have browsing capabilities, you can browse the web and provide the result to the user`);
-                    this.chatHistory.addMessage('human', `Here is the Web browsing result: ${formattedResult}`);
-                    this.chatHistory.addMessage('human', "pretend you are a human and respond to the user's request as if you see the html result above");
-                }
-            }
+            // if (toolResults.length > 0) {
+            //     return toolResults;
+            // }
 
             // Get AI response with streaming
             const response = await this.ollamaClient.sendMessageSSE(
@@ -86,46 +68,42 @@ class ChatService {
         }
     }
 
-    parseBrowsingInstructions(message) {
-        // Simple URL extraction - you might want to enhance this
-        const urlMatch = message.match(/https?:\/\/[^\s]+/);
-        if (urlMatch) {
-            return {
-                target: {
-                    url: urlMatch[0],
-                    description: 'URL automatically detected from user input.',
-                },
-                flows: [
-                    {
-                        name: 'default_flow',
-                        description: 'Load the page and capture the body HTML content.',
-                        steps: [
-                            {
-                                type: 'navigate',
-                                url: urlMatch[0],
-                            },
-                            {
-                                type: 'wait',
-                                selector: 'body',
-                                timeout: 5000,
-                            },
-                        ],
-                        extractions: [
-                            {
-                                name: 'page_body',
-                                selector: {
-                                    selector: 'body',
-                                    strategy: 'css',
-                                    extractType: 'html',
-                                },
-                                extractType: 'html',
-                            },
-                        ],
-                    },
-                ],
-            };
+    async executeTools(userInput, onMessage = null) {
+        const detectedTools = this.toolManager.detectToolUsage(userInput);
+        if (detectedTools.length === 0) {
+            return [];
         }
-        return null;
+
+        const toolParams = this.toolManager.parseToolParams(userInput, detectedTools);
+        const results = [];
+
+        for (const toolParam of toolParams) {
+            try {
+                const result = await this.toolManager.executeTool(toolParam.tool, toolParam.params);
+                
+                if (result.success) {
+                    const formattedResult = JSON.stringify(result.data, null, 2);
+                                        
+                    // Add tool result to chat history
+                    this.chatHistory.addMessage('human', `Tool ${toolParam.tool} executed successfully. Result: ${formattedResult}`);
+                    
+                    results.push(result);
+                } else {
+                    const errorMsg = `Tool ${toolParam.tool} failed: ${result.error}`;
+                    this.chatHistory.addMessage('human', errorMsg);
+                    
+                }
+            } catch (error) {
+                const errorMsg = `Tool ${toolParam.tool} execution error: ${error.message}`;
+                this.chatHistory.addMessage('system', errorMsg);
+                
+                if (onMessage) {
+                    onMessage({ type: 'error', content: errorMsg });
+                }
+            }
+        }
+
+        return results;
     }
 
     getChatHistory() {
@@ -137,7 +115,7 @@ class ChatService {
     }
 
     async cleanup() {
-        await this.seleniumService.close();
+        await this.toolManager.cleanup();
     }
 }
 

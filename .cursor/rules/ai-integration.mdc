@@ -1,0 +1,96 @@
+---
+description: AI Integration and Ollama Client Patterns
+---
+
+# AI Integration with Ollama and LangChain
+
+## Ollama Client Implementation
+Based on [ollamaClient.js](mdc:backend/src/infrastructure/ollamaClient.js):
+
+### Client Configuration
+```javascript
+constructor(baseUrl = "http://localhost:11434", model = "openchat:latest", streaming = true) {
+    this.model = new ChatOllama({
+        baseUrl,
+        model,
+        streaming: streaming,
+        temperature: 1,
+    });
+}
+```
+
+### LangChain Integration
+- Use `ChatPromptTemplate` for prompt management
+- Use `MessagesPlaceholder` for chat history
+- Use `RunnableSequence` for chaining operations
+- Format messages with proper LangChain message types
+
+### Message Formatting Pattern
+```javascript
+formatMessages(chatHistory) {
+    return chatHistory.map(msg => {
+        switch (msg.role) {
+            case 'human': return new HumanMessage(msg.content);
+            case 'ai': return new AIMessage(msg.content);
+            case 'system': return new SystemMessage(msg.content);
+            default: return new HumanMessage(msg.content);
+        }
+    });
+}
+```
+
+## Chat Service Integration
+Based on [chatService.js](mdc:backend/src/application/chatService.js):
+
+### Streaming Response Handling
+```javascript
+async sendMessageSSE(userInput, onMessage) {
+    const response = await this.ollamaClient.sendMessageSSE(
+        this.chatHistory.getMessages(),
+        userInput
+    );
+    
+    let fullResponse = '';
+    for await (const chunk of response) {
+        const content = chunk.content || '';
+        fullResponse += content;
+        onMessage({ type: 'ai', content });
+    }
+    
+    this.chatHistory.addMessage('ai', fullResponse);
+    return fullResponse;
+}
+```
+
+## Web Browsing Integration
+### Selenium Integration Pattern
+- Detect browsing requests with keyword matching
+- Parse URLs from user input using regex
+- Use SeleniumChatAdapter for chat-specific browsing
+- Format browsing results as system messages
+
+### Browsing Instruction Parsing
+```javascript
+parseBrowsingInstructions(message) {
+    const urlMatch = message.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+        return {
+            target: { url: urlMatch[0], description: 'URL detected' },
+            flows: [/* browsing flow configuration */]
+        };
+    }
+    return null;
+}
+```
+
+## Error Handling
+- Wrap AI calls in try-catch blocks
+- Provide meaningful error messages
+- Handle streaming errors gracefully
+- Log errors for debugging
+
+## Configuration Management
+- Use environment variables for Ollama base URL
+- Make model selection configurable
+- Support different temperature settings
+- Handle model availability checks

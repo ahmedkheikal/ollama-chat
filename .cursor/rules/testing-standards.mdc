@@ -1,0 +1,71 @@
+---
+globs: backend/tests/**/*.test.js
+---
+
+# Testing Standards and Patterns
+
+## Jest Configuration
+- Uses Babel for ES6 module transpilation (see [.babelrc](mdc:backend/.babelrc))
+- Test files located in `tests/unit/` and `tests/integration/`
+- Coverage reports generated in `coverage/` directory
+
+## Test File Structure
+Follow the pattern from [chatService.test.js](mdc:backend/tests/unit/chatService.test.js):
+
+```javascript
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import ClassUnderTest from '../../src/path/to/class.js';
+
+// Mock all dependencies
+jest.mock('../../src/dependency1.js');
+jest.mock('../../src/dependency2.js');
+
+describe('ClassName', () => {
+    let instance;
+    let mockDependency1;
+    let mockDependency2;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        // Setup mocks and instance
+    });
+
+    describe('methodName', () => {
+        it('should handle success case', async () => {
+            // Arrange
+            // Act
+            // Assert
+        });
+    });
+});
+```
+
+## Mocking Patterns
+- Mock all external dependencies at the top of test files
+- Use `jest.fn()` for method mocks
+- Use `mockImplementation()` for constructor mocks
+- Always call `jest.clearAllMocks()` in `beforeEach`
+
+## Test Organization
+- Group tests by class/component
+- Use nested `describe` blocks for methods
+- Use descriptive test names: `'should process a regular message successfully'`
+- Test both success and error scenarios
+
+## Assertion Patterns
+- Use `expect().toHaveBeenCalledWith()` for mock verification
+- Use `expect().rejects.toThrow()` for error testing
+- Use `expect().resolves.toBe()` for async success testing
+- Test return values and side effects
+
+## Coverage Requirements
+- Aim for high test coverage (configured in [jest.config.js](mdc:backend/jest.config.js))
+- Test all public methods
+- Test error handling paths
+- Test edge cases and boundary conditions
+
+## Integration Testing
+- Use `supertest` for API endpoint testing
+- Test complete request/response cycles
+- Test SSE streaming functionality
+- Mock external services (Ollama, Selenium)
