@@ -1,0 +1,78 @@
+---
+description: Clean Architecture and Domain-Driven Design Patterns
+---
+
+# Clean Architecture Implementation
+
+## Layer Structure
+The project follows Clean Architecture with clear separation of concerns:
+
+### Domain Layer (`src/domain/`)
+- Contains core business entities and rules
+- No external dependencies
+- Pure business logic
+- Example: [chatHistory.js](mdc:backend/src/domain/chatHistory.js)
+
+### Application Layer (`src/application/`)
+- Contains use cases and application services
+- Orchestrates domain objects
+- Depends only on domain layer
+- Example: [chatService.js](mdc:backend/src/application/chatService.js)
+
+### Infrastructure Layer (`src/infrastructure/`)
+- Contains external service implementations
+- Handles technical concerns (APIs, databases, etc.)
+- Implements interfaces defined in application layer
+- Examples: [ollamaClient.js](mdc:backend/src/infrastructure/ollamaClient.js), [seleniumService.js](mdc:backend/src/infrastructure/seleniumService.js)
+
+### Presentation Layer (`src/server.js`)
+- Contains HTTP endpoints and request handling
+- Depends on application layer
+- Handles serialization/deserialization
+
+## Dependency Direction
+- Dependencies point inward (toward domain)
+- Domain layer has no dependencies
+- Application layer depends only on domain
+- Infrastructure implements application interfaces
+- Presentation orchestrates application services
+
+## Service Pattern
+```javascript
+class ChatService {
+    constructor() {
+        // Inject infrastructure dependencies
+        this.ollamaClient = new OllamaClient();
+        this.chatHistory = new ChatHistory();
+        this.seleniumService = new SeleniumService();
+    }
+    
+    // Application use cases
+    async sendMessage(userInput) {
+        // Orchestrate domain and infrastructure
+    }
+}
+```
+
+## Domain Entity Pattern
+```javascript
+class ChatHistory {
+    constructor() {
+        this.messages = [];
+    }
+    
+    addMessage(role, content) {
+        // Pure business logic
+    }
+    
+    getMessages() {
+        // Domain operations
+    }
+}
+```
+
+## Benefits
+- Testability: Easy to mock dependencies
+- Maintainability: Clear separation of concerns
+- Flexibility: Easy to swap implementations
+- Scalability: Well-defined boundaries

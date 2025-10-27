@@ -1,5 +1,7 @@
 import { Builder, By, until } from 'selenium-webdriver';
 import { Options } from 'selenium-webdriver/chrome.js';
+import { ServiceBuilder } from 'selenium-webdriver/chrome.js';
+import chromedriver from 'chromedriver';
 
 class SeleniumService {
     constructor() {
@@ -13,10 +15,19 @@ class SeleniumService {
             options.addArguments('--headless=new'); // Updated headless mode syntax
             options.addArguments('--no-sandbox');
             options.addArguments('--disable-dev-shm-usage');
+            options.addArguments('--disable-gpu');
+            options.addArguments('--disable-extensions');
+            options.addArguments('--disable-background-timer-throttling');
+            options.addArguments('--disable-backgrounding-occluded-windows');
+            options.addArguments('--disable-renderer-backgrounding');
+
+            // Use chromedriver package to automatically manage driver version
+            const service = new ServiceBuilder(chromedriver.path);
 
             this.driver = await new Builder()
                 .forBrowser('chrome')
                 .setChromeOptions(options)
+                .setChromeService(service)
                 .build();
         }
     }

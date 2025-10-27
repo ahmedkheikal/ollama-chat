@@ -95,6 +95,20 @@ app.delete('/chat/:chatId/history', (req, res) => {
     res.json({ message: 'Chat history cleared' });
 });
 
+// Endpoint to get available tools
+app.get('/tools', (req, res) => {
+    const chatService = getChatService('default');
+    const tools = chatService.toolManager.getAvailableTools();
+    res.json({ tools });
+});
+
+// Endpoint to get tool schemas
+app.get('/tools/schemas', (req, res) => {
+    const chatService = getChatService('default');
+    const schemas = chatService.toolManager.getToolSchemas();
+    res.json({ schemas });
+});
+
 // Cleanup on server shutdown
 process.on('SIGTERM', async () => {
     for (const chatService of chatServices.values()) {

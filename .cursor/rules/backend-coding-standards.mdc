@@ -1,0 +1,58 @@
+---
+globs: backend/src/**/*.js
+---
+
+# Backend JavaScript Coding Standards
+
+## ES6 Modules and Imports
+- Always use ES6 `import/export` syntax (project uses `"type": "module"`)
+- Use default exports for main classes: `export default ClassName`
+- Import with explicit `.js` extensions: `import ChatService from './chatService.js'`
+
+## Class Structure
+- Use ES6 classes for all service and client implementations
+- Constructor should initialize all dependencies
+- Methods should be async when dealing with external APIs
+- Always include error handling with try-catch blocks
+
+## Error Handling Pattern
+```javascript
+try {
+    const result = await someAsyncOperation();
+    return result;
+} catch (error) {
+    throw new Error(`Failed to process operation: ${error.message}`);
+}
+```
+
+## Dependency Injection
+- Inject dependencies through constructor parameters
+- Use dependency injection for testability
+- Example from [chatService.js](mdc:backend/src/application/chatService.js):
+```javascript
+constructor() {
+    this.ollamaClient = new OllamaClient();
+    this.chatHistory = new ChatHistory();
+    this.seleniumService = new SeleniumService();
+}
+```
+
+## API Response Patterns
+- Use consistent response structure for SSE endpoints
+- Include `type` field for message classification: `'ai'`, `'human'`, `'system'`, `'error'`
+- Always set proper SSE headers:
+```javascript
+res.setHeader('Content-Type', 'text/event-stream');
+res.setHeader('Cache-Control', 'no-cache');
+res.setHeader('Connection', 'keep-alive');
+```
+
+## Async/Await Usage
+- Prefer async/await over Promises
+- Use `for await` loops for streaming responses
+- Handle cleanup in async methods (e.g., `cleanup()` method)
+
+## File Naming Conventions
+- Use camelCase for file names: `chatService.js`, `ollamaClient.js`
+- Match class names with file names
+- Use descriptive names that reflect functionality

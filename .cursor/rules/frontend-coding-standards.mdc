@@ -1,0 +1,55 @@
+---
+globs: frontend/src/**/*.js,frontend/src/**/*.jsx
+---
+
+# Frontend React Coding Standards
+
+## React Component Structure
+- Use functional components with hooks (React 18+)
+- Use `styled-components` for styling (no CSS files)
+- Follow the pattern from [ChatBox.js](mdc:frontend/src/components/ChatBox.js)
+
+## State Management
+- Use `useState` for local component state
+- Use `useEffect` for side effects and cleanup
+- Use `useRef` for DOM references (e.g., `messagesEndRef`)
+
+## Styled Components Pattern
+```javascript
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+```
+
+## Props and State Patterns
+- Use destructuring for props: `const ChatBox = ({ chatId }) => {`
+- Use functional state updates: `setMessages(prev => [...prev, newMessage])`
+- Generate unique IDs with `uuidv4()` for list items
+
+## Event Handling
+- Use async/await for API calls
+- Handle loading states with boolean flags
+- Implement proper error handling with try-catch
+
+## SSE Integration Pattern
+- Use `fetch()` with `response.body.getReader()` for SSE
+- Parse SSE data with `JSON.parse(line.slice(6))`
+- Handle streaming responses by concatenating chunks
+- Always clean up readers and handle disconnections
+
+## Component Organization
+- Keep components focused on single responsibility
+- Extract reusable styled components
+- Use descriptive prop names and handle all edge cases
+- Implement proper accessibility (disabled states, keyboard navigation)
+
+## File Structure
+- Components go in `src/components/`
+- Use PascalCase for component files: `ChatBox.js`
+- Export default components
+- Import React hooks explicitly: `import React, { useState, useEffect } from 'react'`
