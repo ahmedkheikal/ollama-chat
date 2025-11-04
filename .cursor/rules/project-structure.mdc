@@ -1,0 +1,44 @@
+---
+alwaysApply: true
+---
+
+# Ollama Chat Project Structure
+
+This is a full-stack chat application with real-time SSE (Server-Sent Events) functionality, integrating Ollama AI and Selenium web browsing capabilities.
+
+## Architecture Overview
+
+The project follows **Clean Architecture** principles with clear separation of concerns:
+
+### Backend Structure (`backend/`)
+- **Entry Point**: [server.js](mdc:backend/src/server.js) - Main Express server with SSE endpoints
+- **Application Layer**: [chatService.js](mdc:backend/src/application/chatService.js) - Core business logic
+- **Domain Layer**: [chatHistory.js](mdc:backend/src/domain/chatHistory.js) - Domain models and entities
+- **Infrastructure Layer**: 
+  - [ollamaClient.js](mdc:backend/src/infrastructure/ollamaClient.js) - Ollama AI integration
+  - [seleniumService.js](mdc:backend/src/infrastructure/seleniumService.js) - Web browsing capabilities
+  - [seleniumChatAdapter.js](mdc:backend/src/infrastructure/seleniumChatAdapter.js) - Selenium adapter for chat
+
+### Frontend Structure (`frontend/`)
+- **Main App**: [App.js](mdc:frontend/src/App.js) - Root React component with chat ID management
+- **Components**: [ChatBox.js](mdc:frontend/src/components/ChatBox.js) - Main chat interface with SSE handling
+
+### Testing Structure (`backend/tests/`)
+- **Unit Tests**: `tests/unit/` - Individual component testing
+- **Integration Tests**: `tests/integration/` - End-to-end API testing
+- **Configuration**: [jest.config.js](mdc:backend/jest.config.js) - Jest testing setup
+
+## Key Technologies
+- **Backend**: Node.js, Express.js, ES6 modules
+- **Frontend**: React 18, Styled Components
+- **AI Integration**: LangChain, Ollama
+- **Web Automation**: Selenium WebDriver
+- **Testing**: Jest with Babel transpilation
+- **Real-time**: Server-Sent Events (SSE)
+
+## Development Commands
+- `npm run dev` - Start both backend and frontend concurrently
+- `npm run dev:backend` - Backend only with nodemon
+- `npm run dev:frontend` - Frontend only
+- `npm test` - Run Jest tests
+- `npm run test:coverage` - Generate test coverage report

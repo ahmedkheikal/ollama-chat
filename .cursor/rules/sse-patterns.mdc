@@ -1,0 +1,89 @@
+---
+description: SSE and Real-time Communication Patterns
+---
+
+# Server-Sent Events (SSE) Implementation Guide
+
+## Backend SSE Implementation
+Based on [server.js](mdc:backend/src/server.js) SSE endpoints:
+
+### SSE Endpoint Setup
+```javascript
+app.get('/chat/:chatId/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    
+    res.write(`data: ${JSON.stringify({ type: 'connected', chatId })}\n\n`);
+    
+    req.on('close', () => {
+        console.log(`Client disconnected from chat ${chatId}`);
+    });
+});
+```
+
+### Streaming Response Pattern
+```javascript
+app.post('/chat/:chatId/sse', async (req, res) => {
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    
+    const onMessage = (message) => {
+        res.write(`data: ${JSON.stringify({...message, chatId})}\n\n`);
+    };
+    
+    await chatService.sendMessageSSE(prompt, onMessage);
+    res.end();
+});
+```
+
+## Frontend SSE Consumption
+Based on [ChatBox.js](mdc:frontend/src/components/ChatBox.js):
+
+### SSE Reader Pattern
+```javascript
+const response = await fetch(`/chat/${chatId}/sse`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: userMessage })
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    
+    const chunk = decoder.decode(value);
+    const lines = chunk.split('\n');
+    
+    lines.forEach(line => {
+        if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6));
+            // Handle streaming data
+        }
+    });
+}
+```
+
+## Message Types
+- `'connected'` - Initial connection confirmation
+- `'ai'` - AI response chunks
+- `'human'` - User messages
+- `'system'` - System messages
+- `'error'` - Error messages
+
+## Error Handling
+- Always handle connection drops gracefully
+- Implement reconnection logic for production
+- Log disconnections for monitoring
+- Clean up resources on component unmount
+
+## Performance Considerations
+- Use streaming for long responses
+- Implement message chunking for large payloads
+- Handle backpressure in high-traffic scenarios
+- Monitor connection limits and cleanup

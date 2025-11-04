@@ -1,0 +1,59 @@
+---
+description: Development Workflow and Best Practices
+---
+
+# Development Workflow and Best Practices
+
+## Project Setup
+- Use `npm run install:all` to install all dependencies
+- Use `npm run dev` to start both backend and frontend concurrently
+- Backend runs on port 3001, frontend on port 3000
+
+## Code Quality Standards
+- Use ESLint configuration from [package.json](mdc:frontend/package.json)
+- Follow consistent naming conventions
+- Write comprehensive tests for all new features
+- Maintain high test coverage
+
+## Git Workflow
+- Use feature branches: `git checkout -b feature/amazing-feature`
+- Write descriptive commit messages
+- Test before committing
+- Use conventional commit format when possible
+
+## Environment Configuration
+- Use environment variables for configuration
+- Default Ollama URL: `http://localhost:11434`
+- Default model: `openchat:latest`
+- Support for different environments (dev, prod)
+
+## Error Handling Standards
+- Always handle async operations with try-catch
+- Provide meaningful error messages
+- Log errors for debugging
+- Graceful degradation for external service failures
+
+## Performance Considerations
+- Use streaming for long AI responses
+- Implement proper cleanup for resources
+- Monitor memory usage with Selenium
+- Optimize React re-renders
+
+## Security Best Practices
+- Validate all user inputs
+- Sanitize URLs before browsing
+- Implement rate limiting for production
+- Use HTTPS in production
+
+## Documentation
+- Keep README.md updated
+- Document API endpoints
+- Include setup instructions
+- Document environment variables
+
+## Testing Strategy
+- Unit tests for all business logic
+- Integration tests for API endpoints
+- Mock external dependencies
+- Test error scenarios
+- Maintain test coverage reports

@@ -3,7 +3,7 @@ import cors from 'cors';
 import ChatService from './application/chatService.js';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -93,6 +93,20 @@ app.delete('/chat/:chatId/history', (req, res) => {
     const chatService = getChatService(chatId);
     chatService.clearChatHistory();
     res.json({ message: 'Chat history cleared' });
+});
+
+// Endpoint to get available tools
+app.get('/tools', (req, res) => {
+    const chatService = getChatService('default');
+    const tools = chatService.toolManager.getAvailableTools();
+    res.json({ tools });
+});
+
+// Endpoint to get tool schemas
+app.get('/tools/schemas', (req, res) => {
+    const chatService = getChatService('default');
+    const schemas = chatService.toolManager.getToolSchemas();
+    res.json({ schemas });
 });
 
 // Cleanup on server shutdown
