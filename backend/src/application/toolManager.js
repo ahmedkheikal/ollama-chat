@@ -1,5 +1,6 @@
 import { ToolRegistry } from '../domain/tools.js';
 import WebBrowsingTool from '../infrastructure/webBrowsingTool.js';
+import GitHubTool from '../infrastructure/githubTool.js';
 
 class ToolManager {
     constructor(tools = []) {
@@ -15,6 +16,10 @@ class ToolManager {
             // Register web browsing tool
             const webBrowsingTool = new WebBrowsingTool();
             this.registry.register(webBrowsingTool);
+            
+            // Register GitHub tool
+            const githubTool = new GitHubTool();
+            this.registry.register(githubTool);
         }
 
         // Future tools can be registered here
@@ -22,8 +27,8 @@ class ToolManager {
         // this.registry.register(searchTool);
     }
 
-    async executeTool(toolName, params) {
-        return await this.registry.executeTool(toolName, params);
+    async executeTool(toolName, params, actionName = null) {
+        return await this.registry.executeTool(toolName, params, actionName);
     }
 
     getAvailableTools() {

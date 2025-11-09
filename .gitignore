@@ -1,2 +1,6 @@
 package-lock.json
 node_modules
+.idea/
+package-lock.json
+frontend/package-lock.json
+backend/package-lock.json

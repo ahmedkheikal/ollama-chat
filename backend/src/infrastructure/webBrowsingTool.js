@@ -8,13 +8,15 @@ export class WebBrowsingTool extends Tool {
             'Browse and extract information from web pages using Selenium automation'
         );
         this.seleniumService = seleniumService || new SeleniumService();
+        this.registerActions();
     }
 
-    getSchema() {
-        return {
-            name: this.name,
-            description: this.description,
-            parameters: {
+    registerActions() {
+        // Register browse action
+        this.registerAction(
+            'browse',
+            'Browse a URL and extract information from the web page',
+            {
                 type: 'object',
                 properties: {
                     url: {
@@ -103,44 +105,30 @@ export class WebBrowsingTool extends Tool {
                     }
                 },
                 required: ['url']
+            },
+            async (params) => {
+                const { url, instructions } = params;
+                const browsingInstructions = instructions || this.createSimpleInstructions(url);
+                const result = await this.seleniumService.browse(browsingInstructions);
+                return ToolResult.success({
+                    url: result.targetUrl,
+                    data: result.flows,
+                    errors: result.errors,
+                    pageSource: result.pageSource
+                });
+            },
+            (params) => {
+                if (!params.url || typeof params.url !== 'string') {
+                    return false;
+                }
+                try {
+                    new URL(params.url);
+                    return true;
+                } catch {
+                    return false;
+                }
             }
-        };
-    }
-
-    validateParams(params) {
-        if (!params.url || typeof params.url !== 'string') {
-            return false;
-        }
-
-        // Basic URL validation
-        try {
-            new URL(params.url);
-        } catch {
-            return false;
-        }
-
-        return true;
-    }
-
-    async execute(params) {
-        try {
-            const { url, instructions } = params;
-
-            // If no detailed instructions provided, create a simple one
-            const browsingInstructions = instructions || this.createSimpleInstructions(url);
-
-            const result = await this.seleniumService.browse(browsingInstructions);
-
-            return ToolResult.success({
-                url: result.targetUrl,
-                data: result.flows,
-                errors: result.errors,
-                pageSource: result.pageSource
-            });
-
-        } catch (error) {
-            return ToolResult.error(`Web browsing failed: ${error.message}`);
-        }
+        );
     }
 
     createSimpleInstructions(url) {

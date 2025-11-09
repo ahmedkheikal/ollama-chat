@@ -57,24 +57,42 @@ app.post('/chat/:chatId/sse', async (req, res) => {
         
         // Create message handler for SSE
         const onMessage = (message) => {
-            res.write(`data: ${JSON.stringify({
-                ...message,
-                chatId
-            })}\n\n`);
+            try {
+                res.write(`data: ${JSON.stringify({
+                    ...message,
+                    chatId
+                })}\n\n`);
+            } catch (writeError) {
+                console.error('Error writing SSE message:', writeError);
+            }
         };
+        
+        // Send heartbeat to keep connection alive during long operations
+        const heartbeatInterval = setInterval(() => {
+            try {
+                res.write(`: heartbeat\n\n`);
+            } catch (e) {
+                clearInterval(heartbeatInterval);
+            }
+        }, 30000); // Every 30 seconds
         
         // Send message and handle streaming response
         await chatService.sendMessageSSE(prompt, onMessage);
         
-        // End the response
+        // Clear heartbeat and end the response
+        clearInterval(heartbeatInterval);
         res.end();
     } catch (error) {
         console.error('Error processing message:', error);
-        res.write(`data: ${JSON.stringify({
-            type: 'error',
-            content: error.message,
-            chatId
-        })}\n\n`);
+        try {
+            res.write(`data: ${JSON.stringify({
+                type: 'error',
+                content: error.message,
+                chatId
+            })}\n\n`);
+        } catch (writeError) {
+            console.error('Error writing error message:', writeError);
+        }
         res.end();
     }
 });

@@ -4,7 +4,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 
 class OllamaClient {
-    constructor(baseUrl = "http://localhost:11434", model = "openchat:latest", streaming = true) {
+    constructor(baseUrl = "http://localhost:11434", model = "openchat:latest", streaming = true, systemPrompt = "You are a helpful assistant.") {
         this.model = new ChatOllama({
             baseUrl,
             model,
@@ -12,8 +12,27 @@ class OllamaClient {
             temperature: 1,
         });
 
+        this.systemPrompt = systemPrompt;
+        // Use SystemMessage directly to avoid template parsing issues with JSON Schema
         this.chatPrompt = ChatPromptTemplate.fromMessages([
-            ["system", "You are a helpful assistant."],
+            new SystemMessage(systemPrompt),
+            new MessagesPlaceholder("chat_history"),
+            ["human", "{input}"],
+        ]);
+
+        this.chain = RunnableSequence.from([
+            this.chatPrompt,
+            this.model,
+        ]);
+    }
+
+    setSystemPrompt(systemPrompt) {
+        this.systemPrompt = systemPrompt;
+        
+        // Recreate the chain with updated prompt
+        // Use SystemMessage directly to avoid template parsing issues with JSON Schema
+        this.chatPrompt = ChatPromptTemplate.fromMessages([
+            new SystemMessage(systemPrompt),
             new MessagesPlaceholder("chat_history"),
             ["human", "{input}"],
         ]);
